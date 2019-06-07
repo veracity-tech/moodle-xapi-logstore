@@ -32,9 +32,11 @@ function randomsamatch(array $config, \stdClass $event, \stdClass $questionattem
         explode('; ', $questionattempt->responsesummary),
         function ($reduction, $selection) {
             $split = explode("\n -> ", $selection);
-            $selectionkey = $split[0];
-            $selectionvalue = $split[1];
-            $reduction[$selectionkey] = $selectionvalue;
+            if (count($split) > 1) {
+                $selectionkey = $split[0];
+                $selectionvalue = $split[1];
+                $reduction[$selectionkey] = $selectionvalue;
+            }
             return $reduction;
         },
         []
@@ -60,9 +62,9 @@ function randomsamatch(array $config, \stdClass $event, \stdClass $questionattem
         ],
         'timestamp' => utils\get_event_timestamp($event),
         'result' => [
-            'response' => $questionattempt->responsesummary,
+            'response' => isset($questionattempt->responsesummary) ? $questionattempt->responsesummary : "",
             'completion' => $questionattempt->responsesummary !== '',
-            'success' => $questionattempt->rightanswer === $questionattempt->responsesummary,
+            'success' => $questionattempt->rightanswer === (isset($questionattempt->responsesummary) ? $questionattempt->responsesummary : ""),
             'extensions' => [
                 'http://learninglocker.net/xapi/cmi/matching/response' => $selections,
             ],

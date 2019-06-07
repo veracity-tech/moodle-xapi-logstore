@@ -27,15 +27,25 @@ function attempt_submitted(array $config, \stdClass $event) {
     $attempt = $repo->read_record_by_id('quiz_attempts', $event->objectid);
     $coursemodule = $repo->read_record_by_id('course_modules', $event->contextinstanceid);
     $quiz = $repo->read_record_by_id('quiz', $attempt->quiz);
+    
     $gradeitem = $repo->read_record('grade_items', [
         'itemmodule' => 'quiz',
         'iteminstance' => $quiz->id,
     ]);
+
+    // attemptgrade holds the grade for the quiz across all attempts, 
+    // not necessarily the grade for this quiz attempt
     $attemptgrade = $repo->read_record('grade_grades', [
         'itemid' => $gradeitem->id,
         'userid' => $event->relateduserid
     ]);
+
+
     $lang = utils\get_course_lang($course);
+    $result = utils\get_attempt_result($config, $attempt, $quiz, $gradeitem, $attemptgrade);
+    
+    // in here as a reminder, used this before to choose whether to sent a passed or failed statement
+    error_log(print_r(utils\get_status_verb($result, $lang), true));
 
     return [[
         'actor' => utils\get_user($config, $user),
@@ -47,7 +57,7 @@ function attempt_submitted(array $config, \stdClass $event) {
         ],
         'object' => utils\get_activity\course_quiz($config, $course, $event->contextinstanceid),
         'timestamp' => utils\get_event_timestamp($event),
-        'result' => utils\get_attempt_result($config, $attempt, $gradeitem, $attemptgrade),
+        'result' => $result,
         'context' => [
             'platform' => $config['source_name'],
             'language' => $lang,

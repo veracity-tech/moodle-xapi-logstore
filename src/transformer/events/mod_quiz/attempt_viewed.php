@@ -34,7 +34,7 @@ function attempt_viewed(array $config, \stdClass $event) {
                 $lang => 'viewed'
             ],
         ],
-        'object' => utils\get_activity\quiz_attempt($config, $event->id, $event->contextinstanceid),
+        'object' => utils\get_activity\quiz_attempt($config, $event->objectid, $event->contextinstanceid),
         'timestamp' => utils\get_event_timestamp($event),
         'context' => [
             'platform' => $config['source_name'],

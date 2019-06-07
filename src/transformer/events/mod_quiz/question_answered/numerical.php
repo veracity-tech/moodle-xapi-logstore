@@ -49,9 +49,9 @@ function numerical(array $config, \stdClass $event, \stdClass $questionattempt, 
         ],
         'timestamp' => utils\get_event_timestamp($event),
         'result' => [
-            'response' => $questionattempt->responsesummary,
+            'response' => isset($questionattempt->responsesummary) ? $questionattempt->responsesummary : "",
             'completion' => $questionattempt->responsesummary !== '',
-            'success' => $questionattempt->rightanswer === $questionattempt->responsesummary,
+            'success' => $questionattempt->rightanswer === isset($questionattempt->responsesummary) ? $questionattempt->responsesummary : "",
             'extensions' => [
                 'http://learninglocker.net/xapi/cmi/numeric/response' => floatval($questionattempt->responsesummary),
             ],

@@ -29,6 +29,7 @@ function handler(array $config, array $events) {
                 $eventconfig = array_merge([
                     'event_function' => $eventfunction,
                 ], $config);
+                error_log("handler: $eventfunctionname");
                 $eventstatements = $eventfunction($eventconfig, $eventobj);
             } else {
                 $eventstatements = [];
@@ -43,7 +44,7 @@ function handler(array $config, array $events) {
             return $transformedevent;
         } catch (\Exception $e) {
             $logerror = $config['log_error'];
-            $logerror("Failed transform for event id #" . $eventobj->id . ": " .  $e->getMessage());
+            $logerror("Failed transform for event"  .  $e->getMessage());
             $logerror($e->getTraceAsString());
 
             // Returns unsuccessfully transformed event without statements.
