@@ -18,50 +18,40 @@ namespace src\transformer\utils;
 defined('MOODLE_INTERNAL') || die();
 
 function get_scorm_result($scormscoestracks, $rawscore) {
-    $maxscore = null;
-    $minscore = null;
+    $result = null;
+    // error_log("in get scorm result....");
+    // error_log(print_r($scormscoestracks, true));
 
     foreach ($scormscoestracks as $st) {
-        if ($st->element == 'cmi.core.score.min') {
-            $minscore = floatval($st->value);
-        } else if ($st->element == 'cmi.core.score.max') {
-            $maxscore = floatval($st->value);
+        // error_log("$st->element: $st->value");
+        if ($st->element == 'cmi.core.lesson_status' ||
+            $st->element == 'cmi.completion_status' ||
+            $st->element == 'cmi.success_status') {
+            // i'm ignoring stuff like 'unknown' or 'not attempted'
+            if ($st->value == 'passed') {
+                $result['success'] = TRUE;
+            }
+            if ($st->value == 'failed') {
+                $result['success'] = FALSE;
+            }
+            if ($st->value == 'completed') {
+                $result['completion'] = TRUE;
+            }
+            if ($st->value == 'incomplete') {
+                $result['completion'] = FALSE;
+            }
+        } 
+    }
+
+    if ($rawscore !== null) {
+        // this returns ['score' => [...]]
+        $scoreobj = get_scorm_score($scormscoestracks, $rawscore);
+    
+        if ($scoreobj !== null) {
+            $result['score'] = $scoreobj["score"];
         }
     }
 
-    if ($maxscore !== null && $minscore !== null) {
-        $scaledscore = get_scaled_score($rawscore, $minscore, $maxscore);
-        return [
-            'score' => [
-                'raw' => $rawscore,
-                'min' => $minscore,
-                'max' => $maxscore,
-                'scaled' => $scaledscore,
-            ],
-        ];
-    }
-
-    if ($maxscore !== null && $minscore === null) {
-        return [
-            'score' => [
-                'raw' => $rawscore,
-                'max' => $maxscore,
-            ],
-        ];
-    }
-
-    if ($maxscore === null && $minscore !== null) {
-        return [
-            'score' => [
-                'raw' => $rawscore,
-                'min' => $minscore,
-            ],
-        ];
-    }
-
-    return [
-        'score' => [
-            'raw' => $rawscore,
-        ],
-    ];
+    return $result;
 }
+

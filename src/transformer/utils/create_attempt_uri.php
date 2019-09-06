@@ -14,21 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace src\transformer\utils\get_activity;
+namespace src\transformer\utils;
 defined('MOODLE_INTERNAL') || die();
 
-use src\transformer\utils as utils;
-
-function course_scorm(array $config, $cmid, $scorm, $lang) {
-    $scormname = property_exists($scorm, 'name') ? $scorm->name : 'Scorm';
-
-    return [
-        'id' => $config['app_url'].'/mod/scorm/view.php?id='.$cmid,
-        'definition' => [
-            'type' => 'http://adlnet.gov/expapi/activities/course',
-            'name' => [
-                $lang => $scormname,
-            ],
-        ],
-    ];
+function attemptid($object, $attempt) {
+    $id = $object['id'];
+    $attemptid = $id . ((strpos($id, '?') !== false) ? "&" : "?") . "attempt=" . $attempt;
+    return $attemptid;
 }

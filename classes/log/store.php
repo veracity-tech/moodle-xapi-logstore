@@ -65,7 +65,7 @@ class store extends php_obj implements log_writer {
         if ($event->eventname == '\core\event\course_module_completion_updated' && 
             $event->other['completionstate'] === 0) {
             return true;
-        }
+        } 
 
         $enabledevents = explode(',', $this->get_config('routes', ''));
         $isdisabledevent = !in_array($event->eventname, $enabledevents);
@@ -117,9 +117,11 @@ class store extends php_obj implements log_writer {
                 'send_jisc_data' => $this->get_config('send_jisc_data', false),
                 'session_id' => sesskey(),
                 'plugin_url' => 'https://github.com/xAPI-vle/moodle-logstore_xapi',
-                'plugin_version' => $plugin->release,
+                'plugin_version' => $plugin->version,
+                // 'plugin_version' => $plugin->release,
                 'repo' => new \src\transformer\repos\MoodleRepository($DB),
                 'app_url' => $CFG->wwwroot,
+                'homePage' => $this->get_config('homePage', false),
             ],
             'loader' => [
                 'loader' => 'moodle_curl_lrs',

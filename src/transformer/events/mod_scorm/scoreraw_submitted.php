@@ -24,8 +24,18 @@ function scoreraw_submitted(array $config, \stdClass $event) {
     $repo = $config['repo'];
     $user = $repo->read_record_by_id('user', $event->userid);
     $course = $repo->read_record_by_id('course', $event->courseid);
-    $scorm = $repo->read_record_by_id('scorm', $event->objectid);
+    $sco = $repo->read_record_by_id("scorm_scoes", $event->objectid);
+    $scorm = $repo->read_record_by_id('scorm', $sco->scorm);
+
     $lang = utils\get_course_lang($course);
+    
+    $object = utils\get_activity\scorm_sco(
+        $config, 
+        $event->contextinstanceid, 
+        $scorm, 
+        $lang,
+        $sco
+    );
 
     $unserializedcmi = unserialize($event->other);
     $attempt = $unserializedcmi['attemptid'];
@@ -35,14 +45,24 @@ function scoreraw_submitted(array $config, \stdClass $event) {
         'scoid' => $event->contextinstanceid,
         'attempt' => $unserializedcmi['attemptid']
     ]);
+
+    $sco_attempt_obj = [
+        'id' => utils\attemptid($object, utils\sco_attempt($event->userid, $scorm)),
+        'definition' => [
+            'type' => 'http://adlnet.gov/expapi/activities/attempt'
+        ]
+    ];
+
     $rawscore = floatval($unserializedcmi['cmivalue']);
+    $ctxscormprofile = utils\get_activity\scorm_profile();
 
     return [[
         'actor' => utils\get_user($config, $user),
         'verb' => utils\get_scorm_verb($scormscoestracks, $lang),
-        'object' => utils\get_activity\course_scorm($config, $event->contextinstanceid, $scorm, $lang),
+        // 'object' => utils\get_activity\course_scorm($config, $event->contextinstanceid, $scorm, $lang),
+        'object' => $object,
         'timestamp' => utils\get_event_timestamp($event),
-        'result' => utils\get_scorm_result($scormscoestracks, $rawscore),
+        'result' => utils\get_scorm_score($scormscoestracks, $rawscore),
         'context' => [
             'platform' => $config['source_name'],
             'language' => $lang,
@@ -51,9 +71,11 @@ function scoreraw_submitted(array $config, \stdClass $event) {
                 'grouping' => [
                     utils\get_activity\site($config),
                     utils\get_activity\course($config, $course),
+                    $sco_attempt_obj,
                 ],
                 'category' => [
                     utils\get_activity\source($config),
+                    $ctxscormprofile,
                 ]
             ],
         ]

@@ -21,6 +21,7 @@ $string['settings'] = 'General Settings';
 $string['xapifieldset'] = 'Custom example fieldset';
 $string['xapi'] = 'xAPI';
 $string['password'] = 'Password';
+$string['homePage'] = 'Account homePage';
 $string['pluginadministration'] = 'Logstore xAPI administration';
 $string['pluginname'] = 'Logstore xAPI';
 $string['submit'] = 'Submit';

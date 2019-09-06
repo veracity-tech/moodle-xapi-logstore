@@ -19,15 +19,16 @@ defined('MOODLE_INTERNAL') || die();
 
 use src\transformer\utils as utils;
 
-function course_scorm(array $config, $cmid, $scorm, $lang) {
-    $scormname = property_exists($scorm, 'name') ? $scorm->name : 'Scorm';
+function scorm_sco(array $config, $cmid, $scorm, $lang, $sco) {
+    $scormname = property_exists($scorm, 'name') ? $scorm->name : 'SCORM';
+    $scotitle = property_exists($sco, 'title')? $sco->title : $scormname;
 
     return [
         'id' => $config['app_url'].'/mod/scorm/view.php?id='.$cmid,
         'definition' => [
-            'type' => 'http://adlnet.gov/expapi/activities/course',
+            'type' => 'http://adlnet.gov/expapi/activities/lesson',
             'name' => [
-                $lang => $scormname,
+                $lang => $scotitle,
             ],
         ],
     ];

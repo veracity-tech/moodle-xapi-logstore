@@ -29,6 +29,11 @@ if ($hassiteconfig) {
     // Key or password.
     $settings->add(new admin_setting_configtext('logstore_xapi/password',
         get_string('password', 'logstore_xapi'), '', 'password', PARAM_TEXT));
+    
+    // actor homePage.
+    $settings->add(new admin_setting_configtext('logstore_xapi/homePage',
+        get_string('homePage', 'logstore_xapi'), 'The actor account homePage value defined in the profile', 
+        'https://my.veracity.it', PARAM_TEXT));
 
     // Switch background batch mode on.
     $settings->add(new admin_setting_configcheckbox('logstore_xapi/backgroundmode',

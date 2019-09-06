@@ -24,30 +24,68 @@ function sco_launched(array $config, \stdClass $event) {
     $repo = $config['repo'];
     $user = $repo->read_record_by_id('user', $event->userid);
     $course = $repo->read_record_by_id('course', $event->courseid);
-    $scorm = $repo->read_record_by_id('scorm', $event->objectid);
+
+    $scorm = null;
+    $sco = null;
+    try {
+        $scorm = $repo->read_record_by_id('scorm', $event->objectid);
+    } catch (\Throwable $th) {
+        if ($event->objecttable == "scorm_scoes") {
+            $sco = $repo->read_record_by_id($event->objecttable, $event->objectid);
+            $scorm = $repo->read_record_by_id('scorm', $sco->scorm);
+        }  
+    }
     $lang = utils\get_course_lang($course);
+    
+    $object = utils\get_activity\scorm_sco(
+        $config, 
+        $event->contextinstanceid, 
+        $scorm, 
+        $lang,
+        $sco
+    );
+
+    $sco_attempt_obj = [
+        'id' => utils\attemptid($object, utils\sco_attempt($event->userid, $scorm)),
+        'definition' => [
+            'type' => 'http://adlnet.gov/expapi/activities/attempt'
+        ]
+    ];
+
+
+    $timestamp = utils\get_event_timestamp($event);
+    $extensions = utils\extensions\base($config, $event, $course);
+    $ctxsite = utils\get_activity\site($config);
+    $ctxmoodlecourse = utils\get_activity\course($config, $course);
+    $ctxscormcourse = utils\get_activity\course_scorm($config, $event->contextinstanceid, $scorm, $lang);
+    $ctxsource = utils\get_activity\source($config);
+    $ctxscormprofile = utils\get_activity\scorm_profile();
+
 
     return [[
         'actor' => utils\get_user($config, $user),
         'verb' => [
-            'id' => 'http://adlnet.gov/expapi/verbs/launched',
+            'id' => 'http://adlnet.gov/expapi/verbs/initialized',
             'display' => [
-                $lang => 'launched'
+                $lang => 'initialized'
             ],
         ],
-        'object' => utils\get_activity\course_scorm($config, $event->contextinstanceid, $scorm, $lang),
-        'timestamp' => utils\get_event_timestamp($event),
+        'object' => $object,
+        'timestamp' => $timestamp,
         'context' => [
             'platform' => $config['source_name'],
             'language' => $lang,
-            'extensions' => utils\extensions\base($config, $event, $course),
+            'extensions' => $extensions,
             'contextActivities' => [
                 'grouping' => [
-                    utils\get_activity\site($config),
-                    utils\get_activity\course($config, $course),
+                    $ctxsite,
+                    $ctxmoodlecourse,
+                    $ctxscormcourse,
+                    $sco_attempt_obj,
                 ],
                 'category' => [
-                    utils\get_activity\source($config),
+                    $ctxsource,
+                    $ctxscormprofile,
                 ]
             ],
         ]
